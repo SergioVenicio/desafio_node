@@ -32,6 +32,8 @@ services:
     ports:
       - 3306:3306
   nginx:
+    depends_on:
+      - app
     build: 
       context: nginx
     container_name: nginx
