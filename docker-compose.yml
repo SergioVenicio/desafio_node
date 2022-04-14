@@ -1,0 +1,47 @@
+version: '3'
+
+services: 
+  app:
+    build: 
+      context: ./nodejs
+      dockerfile: ./Dockerfile
+    container_name: node_app
+    entrypoint: ./entrypoint.sh
+    networks: 
+      - nodejs-app
+    volumes: 
+      - ./nodejs:/usr/src/app/
+    tty: true
+    ports: 
+      - "3000:3000"
+    depends_on: 
+      - db
+  db:
+    image: mysql:latest
+    command: --innodb-use-native-aio=0 --default-authentication-plugin=mysql_native_password
+    container_name: node_db
+    restart: always
+    tty: true
+    volumes: 
+      - ./mysql/data:/var/lib/mysql
+    environment: 
+      - MYSQL_DATABASE=db
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=mysql
+      - MYSQL_USER_PASSWORD=secret
+    networks: 
+      - nodejs-app
+    ports:
+      - 3306:3306
+  nginx:
+    build: 
+      context: nginx
+    container_name: nginx
+    networks: 
+      - nodejs-app
+    ports: 
+      - 8080:80
+
+networks: 
+  nodejs-app:
+    driver: bridge
